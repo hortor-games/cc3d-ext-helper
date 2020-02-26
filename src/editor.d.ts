@@ -1,0 +1,1 @@
+declare let Editor:any;
