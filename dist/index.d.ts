@@ -3,6 +3,7 @@ export declare namespace cce {
         static requestToPackage(pkName: string, method: string, ...args: any[]): Promise<any>;
         static sendToAll(method: string, ...args: any[]): Promise<any>;
         static queryNode(uuid: string): Promise<any>;
+        static queryNodeTree(uuid?: string): Promise<any>;
         /**
          *
          * @return uuid
@@ -66,9 +67,10 @@ export declare namespace cce {
         } | string | number | boolean): Promise<void>;
         addComponent(type: string): Promise<Component>;
         getComponent(type: string): Promise<Component>;
-        getComponents(type: string): Promise<Component[]>;
+        getComponents(type?: string): Promise<Component[]>;
         find(path: string): Promise<Node>;
         getChildAt(idx: number): Promise<Node>;
+        getChildren(idx: number): Promise<Node[]>;
         saveToPrefab(url: string): Promise<string>;
     }
     class Scene {

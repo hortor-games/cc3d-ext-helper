@@ -12,6 +12,9 @@ var cce;
         static async queryNode(uuid) {
             return Ipc.requestToPackage("scene", "query-node", uuid);
         }
+        static async queryNodeTree(uuid) {
+            return Ipc.requestToPackage("scene", "query-node-tree", uuid);
+        }
         /**
          *
          * @return uuid
@@ -156,11 +159,14 @@ var cce;
             if (!n) {
                 return [];
             }
+            if (!type) {
+                return n.__comps__.map(p => new Component(p.value.uuid.value));
+            }
             let rs = n.__comps__.filter(p => p.type == type).map(p => new Component(p.value.uuid.value));
             return rs;
         }
         async find(path) {
-            let tree = await Ipc.requestToPackage("scene", "query-node-tree", this.uuid);
+            let tree = await Ipc.queryNodeTree(this.uuid);
             if (!tree) {
                 return null;
             }
@@ -178,7 +184,7 @@ var cce;
             return new Node(n.uuid);
         }
         async getChildAt(idx) {
-            let tree = await Ipc.requestToPackage("scene", "query-node-tree", this.uuid);
+            let tree = await Ipc.queryNodeTree(this.uuid);
             if (!tree) {
                 return null;
             }
@@ -186,6 +192,14 @@ var cce;
                 return null;
             }
             return new Node(tree.children[idx].uuid);
+        }
+        async getChildren(idx) {
+            let tree = await Ipc.queryNodeTree(this.uuid);
+            if (!tree) {
+                return null;
+            }
+            let nodes = tree.children.map(c => new Node(c.uuid));
+            return nodes;
         }
         async saveToPrefab(url) {
             let info = await Ipc.requestToPackage("scene", "generate-prefab", this.uuid);
@@ -198,7 +212,7 @@ var cce;
     cce.Node = Node;
     class Scene {
         static async root() {
-            let tree = await Ipc.requestToPackage("scene", "query-node-tree");
+            let tree = await Ipc.queryNodeTree();
             return new Node(tree.uuid);
         }
         static async createNode(args = {

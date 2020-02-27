@@ -12,6 +12,10 @@ export namespace cce {
       return Ipc.requestToPackage("scene", "query-node", uuid);
     }
 
+    static async queryNodeTree(uuid?: string) {
+      return Ipc.requestToPackage("scene", "query-node-tree", uuid);
+    }
+
     /**
      *
      * @return uuid
@@ -171,17 +175,20 @@ export namespace cce {
       return new Component(c.value.uuid.value);
     }
 
-    async getComponents(type: string): Promise<Component[]> {
+    async getComponents(type?: string): Promise<Component[]> {
       let n = await Ipc.queryNode(this.uuid);
       if (!n) {
         return [];
+      }
+      if (!type) {
+        return n.__comps__.map(p => new Component(p.value.uuid.value));
       }
       let rs = n.__comps__.filter(p => p.type == type).map(p => new Component(p.value.uuid.value));
       return rs;
     }
 
     async find(path: string): Promise<Node> {
-      let tree = await Ipc.requestToPackage("scene", "query-node-tree", this.uuid);
+      let tree = await Ipc.queryNodeTree(this.uuid);
       if (!tree) {
         return null;
       }
@@ -200,7 +207,7 @@ export namespace cce {
     }
 
     async getChildAt(idx: number): Promise<Node> {
-      let tree = await Ipc.requestToPackage("scene", "query-node-tree", this.uuid);
+      let tree = await Ipc.queryNodeTree(this.uuid);
       if (!tree) {
         return null;
       }
@@ -208,6 +215,15 @@ export namespace cce {
         return null;
       }
       return new Node(tree.children[idx].uuid);
+    }
+
+    async getChildren(idx: number): Promise<Node[]> {
+      let tree = await Ipc.queryNodeTree(this.uuid);
+      if (!tree) {
+        return null;
+      }
+      let nodes = tree.children.map(c => new Node(c.uuid));
+      return nodes;
     }
 
     async saveToPrefab(url: string): Promise<string> {
@@ -222,7 +238,7 @@ export namespace cce {
 
   export class Scene {
     static async root(): Promise<Node> {
-      let tree = await Ipc.requestToPackage("scene", "query-node-tree");
+      let tree = await Ipc.queryNodeTree();
       return new Node(tree.uuid);
     }
 
